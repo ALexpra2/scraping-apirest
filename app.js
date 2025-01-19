@@ -1,7 +1,5 @@
 const express = require('express');
 const fs = require('fs');
-const scrapeNoticias = require('./scraping');
-
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -25,7 +23,6 @@ function guardarDatos() {
 }
 
 app.get('/', (req, res) => {
-    scrapeNoticias()
     leerDatos()
     res.send(` <!DOCTYPE html>
     <html lang="en">
@@ -46,13 +43,19 @@ app.get('/', (req, res) => {
        </body>
     </html>`);
 });
+
+
+//!Partes del metodo CRUD
+
 //Leer las noticias
-app.get('/noticias', (req, res) => {    
+app.get('/noticias', (req, res) => { 
+    leerDatos()   
     res.json(noticias);
 });
 
 //Crear una nueva Noticia
 app.post('/noticias', (req, res) => {
+    
     const nuevaNoticia = {
       id: noticias.length + 1,
       titulo: req.body.titulo,
@@ -67,22 +70,36 @@ app.post('/noticias', (req, res) => {
 
 
 //Buscar un usuario por ID
-app.get('/noticias/:id', (req, res) => {
-    
+app.get('/noticias/:id', (req, res) => {    
     leerDatos()
-    const buscarNoticia = noticias.find(noticia => noticia.id === req.params.id);
+    const buscarNoticia = noticias.find(noticia => noticia.id === parseInt(req.params.id));   //Hay que poner parseint porque noticia.id es un numero y params devualve un string
     if (!buscarNoticia) {
         return res.status(404).json({ mensaje: 'Noticia no encontrada' });
     }
     res.json(buscarNoticia);
-})
+});
 
-app.delete('/noticias/:id', (req, res) => {                                                                     //elimina la noticia pasado como ID
-    usuarios = usuarios.filter(usuario => usuario.nombre.toLowerCase() !== req.params.nombre.toLowerCase());    //devuelvo a la lista de noticias todas menos la que voy a eliminar
+//Actualizar los datos de una noticia.
+app.put('/noticias/:id', (req, res) => {
+    const index = noticias.findIndex(noticia => noticia.id === parseInt(req.params.id));   //Find index devuelve el index si existe o -1 si no existe por eso valido -1 en el if
+    if (index !== -1) {    
+      noticias[index] = { ...noticias[index], ...req.body };                               //me traigo el noticias[index] y le cambio los datos requeridos en req.body
+      res.json(noticias);
+    }
+      res.status(404).json({ mensaje: 'Noticia no encontrada' });
+    });
+
+//Eliminar una noticia por id
+app.delete('/noticias/:id', (req, res) => {                                         //elimina la noticia pasado como ID
+     noticias=noticias.filter(noticia => noticia.id !== parseInt(req.params.id))    //filtro el array devolviendome todos los campos menos el que coincide con el que le paso por id           
       res.json({ 
-        mensaje: 'Usuario eliminado correctamente',
-        usuarios: usuarios
+        mensaje: 'Noticia eliminada correctamente',
+        noticias: noticias
        }); 
+       guardarDatos()
+       
+       
+      
   });  
 
   app.listen(PORT, () => {
