@@ -1,5 +1,6 @@
 const express = require('express');
 const fs = require('fs');
+const scrapeNoticias = require('./scraping');
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -23,6 +24,7 @@ function guardarDatos() {
 }
 
 app.get('/', (req, res) => {
+    scrapeNoticias()
     leerDatos()
     res.send(` <!DOCTYPE html>
     <html lang="en">
@@ -32,7 +34,7 @@ app.get('/', (req, res) => {
         <title>Listado de noticias</title>
     </head>
     <body>
-       <h1>Indice de Noticias</h1>
+       <h1>Cargando indice de Noticias</h1>
        <ul>
        ${noticias.map(noticia => `<li>ID:${noticia.id}, ${noticia.titulo}</li>`).join('')}
        </ul>
