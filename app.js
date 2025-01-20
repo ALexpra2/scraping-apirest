@@ -1,7 +1,8 @@
 const express = require('express');
+const app = express();
 const fs = require('fs');
 const scrapeNoticias = require('./scraping');
-const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
